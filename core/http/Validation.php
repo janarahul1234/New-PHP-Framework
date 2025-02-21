@@ -7,8 +7,8 @@ use PDO;
 class Validation
 {
     private ?PDO $db;
-    private array $errors = [];
-    private array $validated = [];
+    private array $errors        = [];
+    private array $validated     = [];
     private array $rulesHandlers = [];
 
     public function __construct(?PDO $db = null)
@@ -29,7 +29,7 @@ class Validation
                 }
             }
 
-            if (!$skipValidation && !isset($this->errors[$field]) && isset($data[$field])) {
+            if (! $skipValidation && ! isset($this->errors[$field]) && isset($data[$field])) {
                 $this->validated[$field] = $data[$field];
             }
         }
@@ -43,14 +43,14 @@ class Validation
 
     private function fails(): bool
     {
-        return !empty($this->errors);
+        return ! empty($this->errors);
     }
 
     private function applyRule(string $field, string $rule, array $data): bool
     {
         [$ruleName, $params] = $this->parseRule($rule);
 
-        if (!isset($this->rulesHandlers[$ruleName])) {
+        if (! isset($this->rulesHandlers[$ruleName])) {
             throw new \Exception("Validation rule '$ruleName' is not registered.");
         }
 
@@ -82,7 +82,7 @@ class Validation
         );
 
         $this->registerRule('nullable', fn($field, $value, $params, $validation) =>
-            !array_key_exists($field, $validation->validated()) && !isset($value)
+            !array_key_exists($field, $validation->validated) && !isset($value)
         );
 
         $this->registerRule('string', fn($field, $value, $params, $validation) =>
@@ -101,12 +101,12 @@ class Validation
         );
 
         $this->registerRule('min', fn($field, $value, $params, $validation) =>
-            strlen($value) < (int) $params
+            strlen($value ?? '') < (int) $params
             && $validation->addError($field, "The $field field must be at least $params characters.")
         );
 
         $this->registerRule('max', fn($field, $value, $params, $validation) =>
-            strlen($value) > (int) $params
+            strlen($value ?? '') > (int) $params
             && $validation->addError($field, "The $field field may not be greater than $params characters.")
         );
 
@@ -116,16 +116,16 @@ class Validation
             }
 
             [$table, $column, $exception] = array_pad(explode(',', $params), 3, null);
-            $column = $column ?? $field;
+            $column                       = $column ?? $field;
 
-            $query = "SELECT * FROM $table WHERE $column = :value";
+            $query       = "SELECT * FROM $table WHERE $column = :value";
             $queryParams = ['value' => $value];
 
             if ($exception !== null) {
                 $query .= " AND id != :id";
                 $queryParams['id'] = $exception;
             }
-
+            
             $stmt = $validation->db->prepare($query);
             $stmt->execute($queryParams);
 
@@ -142,7 +142,7 @@ class Validation
             }
 
             [$table, $column] = array_pad(explode(',', $params), 2, null);
-            $column = $column ?? $field;
+            $column           = $column ?? $field;
 
             $stmt = $validation->db->prepare("SELECT * FROM $table WHERE $column = :value");
             $stmt->execute(['value' => $value]);

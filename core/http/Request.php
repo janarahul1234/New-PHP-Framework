@@ -3,6 +3,7 @@
 namespace Core\Http;
 
 use Core\Database;
+use Core\Http\UploadFile;
 
 class Request
 {
@@ -78,7 +79,7 @@ class Request
         return !empty($this->body[$key]);
     }
 
-    public function file(string $key): ?array
+    public function file(string $key): ?UploadFile
     {
         return $this->hasFile($key) ? $this->body[$key] : null;
     }

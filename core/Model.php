@@ -98,6 +98,13 @@ abstract class Model
         return $stmt->execute(['id' => $this->attributes[$this->primaryKey]]);
     }
 
+    public function query(string $sql, array $data): \PDO
+    {
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($data);
+        return $stmt;
+    }
+
     private function filterFillable(array $data): array
     {
         return array_intersect_key($data, array_flip($this->fillable));
