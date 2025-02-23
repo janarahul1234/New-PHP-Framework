@@ -1,5 +1,4 @@
 <?php
-
 namespace Core\Http;
 
 use Core\Database;
@@ -8,7 +7,7 @@ use Core\Http\UploadFile;
 class Request
 {
     private array $headers = [];
-    private array $body = [];
+    private array $body    = [];
 
     public function __construct()
     {
@@ -19,11 +18,7 @@ class Request
 
     public function url(): string
     {
-        $baseUrl = env('APP_ENV') === 'production' ? dirname($_SERVER['SCRIPT_NAME']) : '';
-
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $url = '/' . trim(substr($uri, strlen($baseUrl)), '/');
-        return $url ?: '/';
+        return '/' . trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '', '/');
     }
 
     public function method(): string
@@ -69,14 +64,14 @@ class Request
 
     public function validate(array $rules): array
     {
-        $db = Database::connect();
+        $db         = Database::connect();
         $validation = new Validation($db);
         return $validation->validate($this->body, $rules);
     }
 
     public function hasFile(string $key): bool
     {
-        return !empty($this->body[$key]);
+        return ! empty($this->body[$key]);
     }
 
     public function file(string $key): ?UploadFile
@@ -148,7 +143,7 @@ class Request
         $headers = [];
         foreach ($_SERVER as $name => $value) {
             if (str_starts_with($name, 'HTTP_')) {
-                $header = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($name, 5)))));
+                $header           = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($name, 5)))));
                 $headers[$header] = $value;
             }
         }
